@@ -9,7 +9,7 @@ import java.util.Date;
 public class MyThread extends Thread{
 
     //线程创建的时间
-    private Date createDate;
+    private final Date createDate;
 
     //开始的执行时间
     private Date startDate;
