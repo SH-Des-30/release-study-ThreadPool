@@ -1,8 +1,8 @@
 package com.study.threadpoolstudy.web;
 
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import com.study.threadpoolstudy.service.MyThreadFactory;
+
+import java.util.concurrent.*;
 
 /**
  * @author sishijie@winployee.com
@@ -34,16 +34,20 @@ public class ThreadPoolDemo {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                System.out.println("线程的信息："+Thread.currentThread());
 
             });
-
             System.out.println("提交成功数量：" + count);
         }
+
 
         //2、休眠0.5秒等待任务全部条，查看线程池的状态
         Thread.sleep(500L);
         System.out.println("当前线程池的线程数量：" + threadPoolExecutor.getPoolSize());
         System.out.println("当前线程池的等待数量：" + threadPoolExecutor.getQueue().size());
+
+        threadPoolExecutor.shutdown();
+        System.out.println("关闭线程池成功：" + threadPoolExecutor.getQueue().size());
 
         //3、休眠15秒等待线程池任务全部执行完毕， 此时超出核心线程的线程应该会被销毁
         Thread.sleep(15000L);
@@ -65,8 +69,10 @@ public class ThreadPoolDemo {
      *                      否：开启一个新的线程执行任务
      *                      是：执行拒绝策略
      *
-     * 依据： 根绝执行的结果，加上ThreadPoolExecutor.execute()源码
+     * 依据： 根绝执行的结果，加上java.util.concurrent.ThreadPoolExecutor#execute(java.lang.Runnable)源码
      *
+     * 应用场景：只有一个一步任务执行的时候可以使用当前模式.
+     * 注意：需要注意如果是无界队列，任务过多，大量任务在排队中，导致系统出现大规模停顿的问题，出现OOM的问题，不建议直接使用无界队列线程池
      */
     private void testThreadPoolTest1() throws InterruptedException {
 
@@ -75,11 +81,32 @@ public class ThreadPoolDemo {
                 10,
                 3,
                 TimeUnit.SECONDS,
-                new LinkedBlockingDeque<>());
+                new LinkedBlockingQueue<>(),
+                new MyThreadFactory("testThreadPoolTest1"));
 
         submitThreadTask(threadPoolExecutor);
 
     }
+
+
+    /**
+     * 核心线程数5，最大线程10，超出核心线程空闲时的存活时间3秒，最大队列3,自定义线程工厂，更好的管理线程
+     */
+    private void testThreadPoolTest2() throws InterruptedException {
+
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                5,
+                10,
+                3,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(3),
+                new MyThreadFactory("testThreadPoolTest2"));
+
+        submitThreadTask(threadPoolExecutor);
+
+    }
+
+    
 
 
 
