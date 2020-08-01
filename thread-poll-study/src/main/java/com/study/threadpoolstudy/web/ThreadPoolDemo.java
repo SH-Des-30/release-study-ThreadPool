@@ -26,15 +26,15 @@ public class ThreadPoolDemo {
             int count = i;
             threadPoolExecutor.submit(() -> {
                 //通过睡眠的方式模拟3秒的处理业务时间
+                String threadName = Thread.currentThread().getName();
                 try {
-                    System.out.println("开始执行：" + count);
+                    System.out.println(threadName + "开始执行：" + count);
                     Thread.sleep(3000L);
-                    System.out.println("结束执行：" + count);
+                    System.out.println(threadName + "结束执行：" + count);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.out.println("线程的信息："+Thread.currentThread());
 
             });
             System.out.println("提交成功数量：" + count);
