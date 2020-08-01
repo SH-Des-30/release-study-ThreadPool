@@ -1,6 +1,7 @@
 package com.study.threadpoolstudy.web;
 
 import com.study.threadpoolstudy.service.MyThreadFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.concurrent.*;
 
@@ -90,7 +91,12 @@ public class ThreadPoolDemo {
 
 
     /**
-     * 核心线程数5，最大线程10，超出核心线程空闲时的存活时间3秒，最大队列3,自定义线程工厂，更好的管理线程
+     * 线程池配置：
+     *      核心线程数5，最大线程10，超出核心线程空闲时的存活时间3秒，最大队列3,自定义线程工厂，更好的管理线程
+     * 应用场景：
+     *      当线程数量开到一定限度的时候，我们根据拒绝策略，使用更加丰富的降级策略来处理业务逻辑，防止系统因线程队列
+     *      太多阻塞太多的线程，而出现内存溢出的问题。
+     *
      */
     private void testThreadPoolTest2() throws InterruptedException {
 
@@ -106,6 +112,44 @@ public class ThreadPoolDemo {
 
     }
 
+    /**
+     * 线程池配置：
+     *      核心线程0，最大线程数Integer.MAX_VALUE，空闲存活时间3秒，有界队列3
+     * 应用场景：
+     *      核心线程为0，有任务需要执行的时候，会去开一个线程去执行任务，但是当有空闲的线程
+     *      会直接从池里面获取，然后执行线程，在世纪的开发场景中，可以适当的自定义一下最大线程数量，
+     *      当我们无法确定具体的任务数量，并且线程任务不是密集计算型就可以采用当前模式
+     */
+    private void testThreadPoolTest3() throws InterruptedException {
+
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                0,
+                Integer.MAX_VALUE,
+                3,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(3),
+                new MyThreadFactory("testThreadPoolTest3"));
+
+        submitThreadTask(threadPoolExecutor);
+
+    }
+
+
+    private void testThreadPoolTest4() throws InterruptedException {
+
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                0,
+                Integer.MAX_VALUE,
+                3,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(3),
+                new MyThreadFactory("testThreadPoolTest3"));
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+
+        submitThreadTask(threadPoolExecutor);
+
+    }
+
     
 
 
@@ -113,7 +157,9 @@ public class ThreadPoolDemo {
     public static void main(String[] args) throws InterruptedException {
         ThreadPoolDemo threadPoolDemo = new ThreadPoolDemo();
 
-        threadPoolDemo.testThreadPoolTest1();
+//        threadPoolDemo.testThreadPoolTest1();
+//        threadPoolDemo.testThreadPoolTest2();
+        threadPoolDemo.testThreadPoolTest3();
 
     }
 }
